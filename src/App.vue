@@ -2,17 +2,17 @@
     <div id="app">
     <div class="container">
         <div class="add">
-            <form action="">
+            <form @submit.prevent="addTask" action="">
                 <input placeholder="Add new task" type="text" name="" id="">
                 <button>Add Task</button>
             </form>
         </div>
-        <div class="update">
-            <form action="">
+        <div v-if="showUpdate" class="update">
+            <form @submit.prevent="updateTask" action="">
                 <label for="update">Update</label>
-                <input type="text" placeholder="Update task" name="" id="">
-                <button class="u">Update Task</button>
-                <button class="c">Cancel</button>
+                <input v-model="updateTask.title" type="text" placeholder="Update task" name="" id="">
+                <button class="u" type="submit">Update Task</button>
+                <button class="c" @click="showUpdate = false">Cancel</button>
             </form>
         </div>
         <div class="tabledata">
@@ -22,12 +22,12 @@
                     <th>Title</th>
                     <th>Action</th>
                 </tr>
-                <tr>
-                    <td>1</td>
-                    <td>Hello</td>
+                <tr v-for="(task,index) in tasks" :key="task.id">
+                    <td>{{task.id}}</td>
+                    <td>{{task.title}}</td>
                     <td>
-                        <button class="btn1">Edit</button>
-                        <button class="btn2">Delete</button>
+                        <button class="btn1" @click="editTask(index)">Edit</button>
+                        <button class="btn2" @click="deleteTask(task.id)">Delete</button>
                     </td>
                 </tr>
             </table>
@@ -55,6 +55,40 @@ export default {
             try {
                 const response = await this.$axios.get('/tasks/');
                 this.tasks = response.data;
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        },
+        async addTask(){
+            try {
+                const response = await this.$axios.post('/tasks/',{
+                    title: this.newtask
+                });
+                this.tasks.push(response.data);
+                this.newtask = '';
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        },
+        async editTask(index){
+            this.updateTask = this.tasks[index];
+            this.showUpdate = true;
+        },
+        async updateTask(){
+            try {
+                await this.$axios.put(`/tasks/${this.updateTask.id}/`,{
+                    title: this.updateTask.title
+                });
+                this.showUpdate = false;
+                this.fetchTasks();
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        },
+        async deleteTask(id){
+            try {
+                await this.$axios.delete(`/tasks/${id}/`);
+                this.fetchTasks();
             } catch (error) {
                 console.error('Error fetching tasks:', error);
             }
