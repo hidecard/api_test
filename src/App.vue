@@ -36,6 +36,34 @@
    </div>
 </template>
 
+<script>
+
+export default {
+    data(){
+        return{
+            tasks: [],
+            newtask: '',
+            updateTask: {
+              id : null,
+              title : ''
+            },
+            showUpdate: false
+        }
+    },
+    methods : {
+        async fetchTasks(){
+            try {
+                const response = await this.$axios.get('/tasks/');
+                this.tasks = response.data;
+            } catch (error) {
+                console.error('Error fetching tasks:', error);
+            }
+        }
+    }
+}
+
+</script>
+
 <style>
     .container{
         display: flex;
